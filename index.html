@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="PakujSię — generator listy rzeczy na podróż według kierunku, czasu trwania i pogody.">
+<title>PakujSię — lista rzeczy na podróż</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='20' width='48' height='36' rx='7' fill='%23E4572E'/%3E%3Crect x='24' y='8' width='16' height='14' rx='4' fill='none' stroke='%2314283A' stroke-width='5'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#E9F2F6;--ink:#14283A;--muted:#4D6275;--card:#fff;--line:#C9D9E2;--sun:#F2B632;--coral:#E4572E;--green:#2A8A66;--r:14px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Nunito Sans","Segoe UI",system-ui,sans-serif}
+h1,h2,h3,.brand{font-family:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;line-height:1.15;margin:0}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header.top{background:var(--ink);color:#fff}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:800}
+nav{display:flex;gap:6px}
+nav button{background:transparent;border:2px solid transparent;color:#cfe0ea;padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:700}
+nav button[aria-selected=true]{background:var(--sun);color:var(--ink)}
+nav button:hover:not([aria-selected=true]){border-color:#4b6a80}
+.badge{background:var(--coral);color:#fff;border-radius:99px;font-size:.75rem;padding:1px 8px;margin-left:6px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding:34px 0 44px}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
+.hero p{color:#cfe0ea;max-width:46ch;margin:14px 0 0}
+.hero svg{width:100%;height:auto;max-height:280px}
+main{padding:28px 0 60px}
+.view[hidden]{display:none}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:20px}
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;font-weight:800;font-size:1.2rem;padding:0;margin-bottom:10px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opt span{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:var(--r);background:#F7FBFD;font-weight:700;min-height:52px}
+.opt input:checked+span{border-color:var(--ink);background:var(--sun)}
+.opt input:focus-visible+span{outline:3px solid var(--coral);outline-offset:2px}
+.opt svg{width:26px;height:26px;flex:none}
+.hint{color:var(--muted);font-size:.9rem;margin:6px 0 0}
+.err{color:#B3260E;font-weight:700;margin:0 0 14px;min-height:1.5em}
+.btn{background:var(--coral);color:#fff;border:2px solid var(--ink);border-radius:99px;padding:12px 26px;font-weight:800;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.btn:hover{transform:translateY(1px);box-shadow:0 3px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:none;padding:8px 16px;font-size:.92rem}
+.btn.ghost:hover{background:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sum{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.tag{background:var(--ink);color:#fff;border-radius:99px;padding:3px 12px;font-size:.88rem;font-weight:700}
+.prog{height:14px;background:var(--line);border-radius:99px;overflow:hidden;margin:14px 0 4px}
+.prog i{display:block;height:100%;width:0;background:var(--green);transition:width .3s}
+.cat h3{font-size:1.1rem;margin:20px 0 6px}
+ul.items{list-style:none;margin:0;padding:0}
+.item{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px dashed var(--line)}
+.item label{flex:1;display:flex;align-items:center;gap:12px;cursor:pointer}
+.item input[type=checkbox]{width:22px;height:22px;accent-color:var(--green);flex:none}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1.3rem;line-height:1;padding:6px 10px;border-radius:8px}
+.del:hover{color:#B3260E;background:#fdeceb}
+.add{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.add input{flex:1;min-width:180px;border:2px solid var(--line);border-radius:99px;padding:10px 16px;background:#F7FBFD}
+.empty{text-align:center;padding:30px 10px}
+.empty svg{width:120px;margin-bottom:8px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%)}
+footer{color:var(--muted);text-align:center;font-size:.88rem;padding:0 20px 30px}
+@media(max-width:720px){.hero{grid-template-columns:1fr;padding:22px 0 30px}.hero svg{max-height:200px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{header.top,.noprint,footer,#toast{display:none!important}.card{border:0}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="wrap">
+  <div class="bar">
+   <div class="brand">
+    <svg width="38" height="38" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="20" width="48" height="36" rx="8" fill="#E4572E"/><rect x="24" y="8" width="16" height="14" rx="4" fill="none" stroke="#F2B632" stroke-width="5"/><rect x="8" y="34" width="48" height="5" fill="#14283A" opacity=".25"/><circle cx="32" cy="37" r="6" fill="#F2B632"/><path d="M29 37l2.2 2.4 4-4.6" stroke="#14283A" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    PakujSię
+   </div>
+   <nav role="tablist" aria-label="Sekcje">
+    <button type="button" role="tab" id="tab-gen" aria-selected="true" aria-controls="view-gen">Generator</button>
+    <button type="button" role="tab" id="tab-list" aria-selected="false" aria-controls="view-list">Moja lista<span class="badge" id="badge" hidden>0</span></button>
+   </nav>
+  </div>
+  <div class="hero">
+   <div>
+    <h1>Nie pisz listy — wybierz wyjazd</h1>
+    <p>Wskaż kierunek, czas trwania i pogodę. PakujSię ułoży listę rzeczy, a Ty będziesz je wykreślać podczas pakowania.</p>
+   </div>
+   <svg viewBox="0 0 360 260" role="img" aria-label="Ilustracja: walizka, słońce, góry i fale">
+    <circle cx="270" cy="62" r="34" fill="#F2B632"/>
+    <g stroke="#F2B632" stroke-width="5" stroke-linecap="round"><path d="M270 8v10M270 106v10M216 62h10M314 62h10M232 24l7 7M301 93l7 7M308 24l-7 7M239 93l-7 7"/></g>
+    <path d="M0 200l78-110 46 62 36-48 80 96z" fill="#2F5D75"/><path d="M78 90l-20 28 20-8 12 10z" fill="#E9F2F6"/>
+    <path d="M0 214q30-18 60 0t60 0 60 0 60 0 60 0 60 0v46H0z" fill="#3FA7C9"/>
+    <path d="M0 236q30-14 60 0t60 0 60 0 60 0 60 0 60 0v24H0z" fill="#2A8DB0"/>
+    <g transform="translate(112 118)"><rect x="34" y="0" width="52" height="30" rx="10" fill="none" stroke="#fff" stroke-width="8"/><rect x="0" y="22" width="120" height="88" rx="14" fill="#E4572E" stroke="#14283A" stroke-width="4"/><rect x="0" y="52" width="120" height="8" fill="#14283A" opacity=".25"/><rect x="48" y="46" width="24" height="20" rx="5" fill="#F2B632" stroke="#14283A" stroke-width="3"/><rect x="18" y="34" width="10" height="66" rx="4" fill="#14283A" opacity=".2"/><rect x="92" y="34" width="10" height="66" rx="4" fill="#14283A" opacity=".2"/></g>
+   </svg>
+  </div>
+ </div>
+</header>
+
+<main class="wrap">
+ <!-- Widok 1: generator (celowo bez znacznika <form> — przycisk działa też w podglądach z piaskownicą) -->
+ <section class="view" id="view-gen" role="tabpanel" aria-labelledby="tab-gen">
+  <div class="card" id="form">
+   <fieldset>
+    <legend>Dokąd jedziesz?</legend>
+    <div class="opts">
+     <label class="opt"><input type="radio" name="dest" value="sea"><span><svg viewBox="0 0 26 26"><path d="M1 17q3-3 6 0t6 0 6 0 6 0v6H1z" fill="#3FA7C9"/><circle cx="19" cy="8" r="4" fill="#F2B632"/></svg>Morze</span></label>
+     <label class="opt"><input type="radio" name="dest" value="mountains"><span><svg viewBox="0 0 26 26"><path d="M1 22l8-14 5 8 3-4 8 10z" fill="#2F5D75"/></svg>Góry</span></label>
+     <label class="opt"><input type="radio" name="dest" value="city"><span><svg viewBox="0 0 26 26"><path d="M3 23V10h7v13zM12 23V3h8v20z" fill="#14283A"/><path d="M14 7h1.5v2H14zm3 0h1.5v2H17zm-3 4h1.5v2H14zm3 0h1.5v2H17z" fill="#F2B632"/></svg>Miasto</span></label>
+    </div>
+   </fieldset>
+   <fieldset>
+    <legend>Na ile dni?</legend>
+    <div class="opts">
+     <label class="opt"><input type="radio" name="days" value="3"><span>1–3 dni</span></label>
+     <label class="opt"><input type="radio" name="days" value="7"><span>4–7 dni</span></label>
+     <label class="opt"><input type="radio" name="days" value="14"><span>2 tygodnie</span></label>
+    </div>
+   </fieldset>
+   <fieldset>
+    <legend>Jaka pogoda?</legend>
+    <div class="opts">
+     <label class="opt"><input type="checkbox" name="weather" value="hot"><span><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="6" fill="#F2B632"/></svg>Upał</span></label>
+     <label class="opt"><input type="checkbox" name="weather" value="rain"><span><svg viewBox="0 0 26 26"><path d="M13 3C9 10 6 13 6 17a7 7 0 0014 0c0-4-3-7-7-14z" fill="#3FA7C9"/></svg>Deszcz</span></label>
+    </div>
+    <p class="hint">Możesz wybrać oba warianty albo żaden — wtedy dodamy rzeczy na umiarkowaną pogodę.</p>
+   </fieldset>
+   <p class="err" id="err" role="alert"></p>
+   <button class="btn" type="button" id="gen">Wygeneruj listę</button>
+  </div>
+ </section>
+
+ <!-- Widok 2: lista -->
+ <section class="view" id="view-list" role="tabpanel" aria-labelledby="tab-list" hidden>
+  <div class="card" id="listCard"></div>
+ </section>
+</main>
+<footer>Projekt edukacyjny · Vibe Coding · dane zapisują się tylko w Twojej przeglądarce</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const LS='pakujsie-v1';
+const NAMES={dest:{sea:'Morze',mountains:'Góry',city:'Miasto'},days:{3:'1–3 dni',7:'4–7 dni',14:'2 tygodnie'},hot:'Upał',rain:'Deszcz'};
+let state={meta:null,items:[]};
+let confirming=false,manual=false;
+function listText(){return state.items.map(i=>(i.done?'[x] ':'[ ] ')+i.text).join('\n')}
+function copyText(txt){
+  // 1) nowoczesne API, 2) awaryjnie execCommand, 3) pole tekstowe do ręcznego kopiowania
+  const fallback=()=>{
+    try{
+      const ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(ta);ta.select();
+      const ok=document.execCommand('copy');document.body.removeChild(ta);return ok;
+    }catch(e){return false}
+  };
+  const done=ok=>{
+    if(ok){manual=false;toast('Lista skopiowana')}
+    else{manual=true;render();const m=$('#manual');if(m){m.focus();m.select()}toast('Zaznacz tekst i skopiuj ręcznie (Ctrl+C)')}
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>done(true)).catch(()=>done(fallback()));
+  }else done(fallback());
+}
+
+// ---- zapis (z zabezpieczeniem na wypadek braku localStorage) ----
+function load(){try{const s=JSON.parse(localStorage.getItem(LS));if(s&&Array.isArray(s.items))state=s}catch(e){}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+
+// ---- generowanie listy ----
+function build(dest,days,weather){
+  const d=+days,L=[];
+  const add=(cat,text)=>L.push({cat,text});
+  ['Paszport / dowód osobisty','Karta płatnicza i trochę gotówki','Telefon i ładowarka','Powerbank'].forEach(t=>add('Dokumenty i technika',t));
+  add('Ubrania',d===3?'3 koszulki':d===7?'6 koszulek':'10 koszulek');
+  add('Ubrania',d===3?'3 pary bielizny':d===7?'7 par bielizny':'10 par bielizny');
+  add('Ubrania',d===3?'3 pary skarpet':d===7?'6 par skarpet':'9 par skarpet');
+  add('Ubrania',d===3?'1 para spodni / szortów':d===7?'2 pary spodni / szortów':'3 pary spodni / szortów');
+  add('Ubrania','Piżama');
+  ['Szczoteczka i pasta do zębów','Szampon i żel pod prysznic','Dezodorant','Leki osobiste'].forEach(t=>add('Higiena i zdrowie',t));
+  if(d===14){add('Higiena i zdrowie','Worek na brudne ubrania');add('Higiena i zdrowie','Zapas leków na cały wyjazd');add('Dokumenty i technika','Ubezpieczenie i kopie dokumentów')}
+  if(dest==='sea'){['Kostium kąpielowy / kąpielówki','Ręcznik plażowy','Klapki','Krem z filtrem (SPF 30+)'].forEach(t=>add('Na morze',t))}
+  if(dest==='mountains'){['Buty trekkingowe','Polar','Ciepła kurtka','Plecak turystyczny','Bidon na wodę','Latarka czołowa','Mała apteczka'].forEach(t=>add('W góry',t))}
+  if(dest==='city'){['Wygodne buty do chodzenia','Mała torba miejska','Słuchawki','Mapy offline miasta'].forEach(t=>add('Do miasta',t))}
+  if(weather.includes('hot')){['Czapka z daszkiem lub kapelusz','Okulary przeciwsłoneczne','Lekkie ubrania z lnu lub bawełny','Krem z filtrem (SPF 30+)'].forEach(t=>add('Na upał',t))}
+  if(weather.includes('rain')){['Kurtka przeciwdeszczowa','Składany parasol','Zapasowe skarpetki','Wodoodporne etui na telefon'].forEach(t=>add('Na deszcz',t))}
+  if(!weather.length){add('Ubrania','Lekka kurtka lub bluza')}
+  const seen=new Set();
+  return L.filter(i=>{const k=i.text.toLowerCase();if(seen.has(k))return false;seen.add(k);return true})
+          .map((i,n)=>({id:Date.now()+n,cat:i.cat,text:i.text,done:false}));
+}
+
+// ---- wyświetlanie ----
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+  const total=state.items.length,done=state.items.filter(i=>i.done).length;
+  const b=$('#badge');b.hidden=!total;b.textContent=total?(total-done):0;
+  const c=$('#listCard');
+  if(!total){
+    c.innerHTML='<div class="empty"><svg viewBox="0 0 120 90" aria-hidden="true"><rect x="10" y="26" width="100" height="58" rx="12" fill="#C9D9E2"/><rect x="42" y="8" width="36" height="22" rx="8" fill="none" stroke="#C9D9E2" stroke-width="8"/></svg><h2>Lista jest jeszcze pusta</h2><p>Wybierz parametry wyjazdu w generatorze, a ułożymy listę.</p><button type="button" class="btn" id="toGen">Przejdź do generatora</button></div>';
+    $('#toGen').onclick=()=>show('gen');return;
+  }
+  const m=state.meta||{},pct=Math.round(done/total*100);
+  const cats=[...new Set(state.items.map(i=>i.cat))];
+  c.innerHTML=
+   '<h2>Twoja lista rzeczy</h2><div class="sum">'+
+   [m.dest&&NAMES.dest[m.dest],m.days&&NAMES.days[m.days]].concat((m.weather||[]).map(w=>NAMES[w])).filter(Boolean).map(t=>'<span class="tag">'+t+'</span>').join('')+'</div>'+
+   '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'" aria-label="Postęp pakowania"><i style="width:'+pct+'%"></i></div>'+
+   '<p class="hint">'+(done===total?'Wszystko spakowane — szerokiej drogi!':'Spakowano '+done+' z '+total+' ('+pct+'%)')+'</p>'+
+   cats.map(cat=>'<div class="cat"><h3>'+esc(cat)+'</h3><ul class="items">'+state.items.filter(i=>i.cat===cat).map(i=>
+     '<li class="item'+(i.done?' done':'')+'"><label><input type="checkbox" data-id="'+i.id+'"'+(i.done?' checked':'')+'><span class="t">'+esc(i.text)+'</span></label><button type="button" class="del noprint" data-del="'+i.id+'" aria-label="Usuń: '+esc(i.text)+'">×</button></li>').join('')+'</ul></div>').join('')+
+   '<h3 style="margin-top:26px" class="noprint">Dodaj własną rzecz</h3><div class="add noprint"><input id="newItem" maxlength="40" placeholder="Na przykład: aparat fotograficzny" aria-label="Nazwa rzeczy"><button type="button" class="btn ghost" id="addBtn">Dodaj</button></div><p class="err" id="addErr" role="alert"></p>'+
+   '<div class="row noprint">'+(confirming
+     ?'<strong>Usunąć całą listę?</strong><button type="button" class="btn ghost" id="yes">Tak, usuń</button><button type="button" class="btn ghost" id="no">Anuluj</button>'
+     :'<button type="button" class="btn ghost" id="reset">Odznacz wszystko</button><button type="button" class="btn ghost" id="copy">Kopiuj</button><button type="button" class="btn ghost" id="clear">Nowa lista</button>')+'</div>'+
+   (manual?'<textarea id="manual" readonly rows="8" aria-label="Lista do skopiowania" style="width:100%;margin-top:12px;border:2px solid var(--line);border-radius:12px;padding:10px;font:inherit">'+esc(listText())+'</textarea>':'');
+}
+
+function show(v){
+  ['gen','list'].forEach(k=>{$('#view-'+k).hidden=k!==v;$('#tab-'+k).setAttribute('aria-selected',k===v)});
+  if(v==='list')render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+let tt;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
+
+// ---- zdarzenia ----
+$('#tab-gen').onclick=()=>show('gen');
+$('#tab-list').onclick=()=>show('list');
+
+function generate(){
+  const d=document.querySelector('[name=dest]:checked'),n=document.querySelector('[name=days]:checked');
+  const weather=[...document.querySelectorAll('[name=weather]:checked')].map(x=>x.value);
+  const miss=[];if(!d)miss.push('kierunek');if(!n)miss.push('czas trwania podróży');
+  if(miss.length){$('#err').textContent='Wybierz, proszę: '+miss.join(' i ')+'.';return}
+  $('#err').textContent='';confirming=false;manual=false;
+  state={meta:{dest:d.value,days:n.value,weather},items:build(d.value,n.value,weather)};
+  save();show('list');toast('Lista gotowa: '+state.items.length+' rzeczy');
+}
+$('#gen').addEventListener('click',generate);
+
+function addItem(){
+  const inp=$('#newItem'),v=inp.value.trim(),err=$('#addErr');
+  if(!v){err.textContent='Wpisz nazwę rzeczy.';inp.focus();return}
+  if(v.length<2){err.textContent='Nazwa musi mieć co najmniej 2 znaki.';inp.focus();return}
+  if(state.items.some(i=>i.text.toLowerCase()===v.toLowerCase())){err.textContent='Ta rzecz jest już na liście.';inp.focus();return}
+  state.items.push({id:Date.now(),cat:'Moje rzeczy',text:v,done:false});save();render();toast('Dodano: '+v);$('#newItem').focus();
+}
+
+$('#listCard').addEventListener('change',e=>{
+  const id=e.target.dataset&&e.target.dataset.id;if(!id)return;
+  const it=state.items.find(i=>i.id==id);if(it){it.done=e.target.checked;save();render()}
+  const again=document.querySelector('[data-id="'+id+'"]');if(again)again.focus();
+});
+$('#listCard').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.del){state.items=state.items.filter(i=>i.id!=t.dataset.del);save();render();toast('Rzecz usunięta')}
+  else if(t.id==='addBtn'){addItem()}
+  else if(t.id==='reset'){state.items.forEach(i=>i.done=false);save();render();toast('Zaznaczenia usunięte')}
+  else if(t.id==='clear'){confirming=true;render()}
+  else if(t.id==='no'){confirming=false;render()}
+  else if(t.id==='yes'){confirming=false;manual=false;state={meta:null,items:[]};save();document.querySelectorAll('#form input').forEach(x=>x.checked=false);show('gen');toast('Lista wyczyszczona')}
+  else if(t.id==='copy'){copyText(listText())}
+});
+$('#listCard').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='newItem'){e.preventDefault();addItem()}});
+
+load();render();
+})();
+</script>
+</body>
+</html>
